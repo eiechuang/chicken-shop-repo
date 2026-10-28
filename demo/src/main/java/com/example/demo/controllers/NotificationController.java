@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dto.NotificationRequest;
+import com.example.demo.dto.NotificationDTO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +16,10 @@ public class NotificationController {
 
     @PostMapping
     public ResponseEntity<Void> send(
-            @RequestBody NotificationRequest request) {
+            @RequestBody NotificationDTO request) {
 
         logger.info(
-            "Mock notification sent: recipient={}, type={}, message={}",
+            "Mock notification received: recipient={}, type={}, message={}",
             request.recipient(),
             request.type(),
             request.message()

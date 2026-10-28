@@ -2,16 +2,23 @@ package com.example.demo.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.demo.dto.BookingDTO;
 import com.example.demo.repo.BookingRepo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BookingService {
 
+    private static final Logger logger =
+        LoggerFactory.getLogger(BookingService.class);
+
     private final BookingRepo bookingRepo;
+
+    private int bookingCounter = 0;
 
     public BookingService(BookingRepo bookingRepo) {
         this.bookingRepo = bookingRepo;
@@ -28,13 +35,24 @@ public class BookingService {
             slotId,
             instructions
         );
+
+        bookingCounter++;
+
+        logger.info(
+            "Booking created: userId={}, slotId={}",
+            userId,
+            slotId
+        );
     }
 
-    public List<BookingDTO> getBookingsForUser(Long userId) {
+    public List<BookingDTO> getBookingsForUser(
+            Long userId) {
+
         return bookingRepo.findByUserId(userId);
     }
 
     public List<BookingDTO> getAllBookings() {
+
         return bookingRepo.findAllBookings();
     }
 
@@ -49,6 +67,27 @@ public class BookingService {
                 userId
             );
 
-        return rowsUpdated > 0;
+        if (rowsUpdated > 0) {
+
+            logger.info(
+                "Booking cancelled: orderId={}, userId={}",
+                orderId,
+                userId
+            );
+
+            return true;
+        }
+
+        logger.warn(
+            "Cancellation failed: orderId={}, userId={}",
+            orderId,
+            userId
+        );
+
+        return false;
+    }
+
+    public int getBookingCount() {
+        return bookingCounter;
     }
 }

@@ -4,4 +4,5 @@ public record NotificationDTO(
     String recipient,
     String type,
     String message
-) {}
+) {
+}
