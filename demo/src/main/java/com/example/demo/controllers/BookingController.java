@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.demo.dto.NotificationDTO;
 import com.example.demo.service.BookingService;
+import com.example.demo.service.NotificationGateway;
 import com.example.demo.service.SlotService;
 
 @Controller
@@ -19,13 +21,16 @@ public class BookingController {
 
     private final SlotService slotService;
     private final BookingService bookingService;
+    private final NotificationGateway notificationGateway;
 
     public BookingController(
             SlotService slotService,
-            BookingService bookingService) {
+            BookingService bookingService,
+            NotificationGateway notificationGateway) {
 
         this.slotService = slotService;
         this.bookingService = bookingService;
+        this.notificationGateway = notificationGateway;
     }
 
     @GetMapping("/book")
@@ -54,42 +59,54 @@ public class BookingController {
         return "book";
     }
 
-   @PostMapping("/book")
-public String createBooking(
-        @RequestParam Long slotId,
-        @RequestParam(required = false) String instructions,
-        HttpSession session,
-        HttpServletResponse response,
-        Model model) {
+    @PostMapping("/book")
+    public String createBooking(
+            @RequestParam Long slotId,
+            @RequestParam(required = false) String instructions,
+            HttpSession session,
+            HttpServletResponse response,
+            Model model) {
 
-    String role = (String) session.getAttribute("role");
+        String role = (String) session.getAttribute("role");
 
-    if (role == null) {
-        return "redirect:/login?required";
+        if (role == null) {
+            return "redirect:/login?required";
+        }
+
+        if (!"CUSTOMER".equals(role)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return "403";
+        }
+
+        Long userId =
+            (Long) session.getAttribute("userId");
+
+        String username =
+            (String) session.getAttribute("username");
+
+        try {
+            bookingService.createBooking(
+                userId,
+                slotId,
+                instructions
+            );
+        } catch (DataIntegrityViolationException e) {
+            return "redirect:/my-orders";
+        }
+
+        notificationGateway.send(
+    new NotificationDTO(
+        java.util.UUID.randomUUID().toString(),
+        username,
+        "BOOKING_CONFIRMATION",
+        "Your pickup booking was confirmed."
+    )
+);
+
+        model.addAttribute("slotId", slotId);
+
+        return "confirmation";
     }
-
-    if (!"CUSTOMER".equals(role)) {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        return "403";
-    }
-
-    Long userId =
-        (Long) session.getAttribute("userId");
-
-    try {
-        bookingService.createBooking(
-            userId,
-            slotId,
-            instructions
-        );
-    } catch (DataIntegrityViolationException e) {
-        return "redirect:/my-orders";
-    }
-
-    model.addAttribute("slotId", slotId);
-
-    return "confirmation";
-}
 
     @GetMapping("/my-orders")
     public String myOrders(
@@ -141,10 +158,26 @@ public String createBooking(
         Long userId =
             (Long) session.getAttribute("userId");
 
-        bookingService.cancelBooking(
-            orderId,
-            userId
+        String username =
+            (String) session.getAttribute("username");
+
+        boolean cancelled =
+            bookingService.cancelBooking(
+                orderId,
+                userId
+            );
+
+        if (cancelled) {
+            notificationGateway.send(
+        new NotificationDTO(
+        "CANCEL-" + orderId,
+        username,
+        "CANCELLATION",
+        "Your pickup booking was cancelled."
+    )
         );
+            
+        }
 
         return "redirect:/my-orders";
     }

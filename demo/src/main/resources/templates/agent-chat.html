@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pickup Assistant</title>
+</head>
+<body>
+<h1>Pickup Assistant</h1>
+<p>Ask about pickup policies, available slots, your bookings, booking a slot, or cancelling an order.</p>
+
+<div id="chat"></div>
+
+<form id="chatForm">
+    <input id="message" type="text" size="70" autocomplete="off" required>
+    <button type="submit">Send</button>
+</form>
+
+<br>
+<a href="/">Back Home</a>
+
+<script>
+const form = document.getElementById('chatForm');
+const input = document.getElementById('message');
+const chat = document.getElementById('chat');
+
+function addLine(label, text) {
+    const p = document.createElement('p');
+    p.textContent = label + ': ' + text;
+    chat.appendChild(p);
+}
+
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+
+    addLine('You', message);
+    input.value = '';
+
+    try {
+        const response = await fetch('/agent/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message})
+        });
+        const data = await response.json();
+        addLine('Assistant', data.reply || data.error || 'No response');
+    }
+    catch (error) {
+        addLine('Assistant', 'Request failed: ' + error);
+    }
+});
+</script>
+</body>
+</html>

@@ -61,4 +61,26 @@ public class UserRepo {
             role
         );
     }
+    public UserDTO findById(Long userId) {
+
+        String sql = """
+            SELECT user_id, username, password_hash, role
+            FROM users
+            WHERE user_id = ?
+        """;
+
+        List<UserDTO> users = jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> new UserDTO(
+                rs.getLong("user_id"),
+                rs.getString("username"),
+                rs.getString("password_hash"),
+                rs.getString("role")
+            ),
+            userId
+        );
+
+        return users.isEmpty() ? null : users.get(0);
+    }
+
 }

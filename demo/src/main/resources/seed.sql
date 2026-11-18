@@ -1,25 +1,14 @@
-
-INSERT INTO users (username, password_hash, role)
+MERGE INTO users (username, password_hash, role)
+KEY(username)
 VALUES (
     'staff',
     '123',
     'PROVIDER'
 );
 
--- no staff account, need to figure out how to generate bcrypt hashes for testing purposes. Sorry!
-
-
--- INSERT INTO menu_items (name, description, price)
--- VALUES
--- Exmaple item
-
-
-
-INSERT INTO pickup_slots (start_time, end_time)
+MERGE INTO pickup_slots (slot_id, start_time, end_time)
+KEY(slot_id)
 VALUES
-('2026-10-08 17:00:00', '2026-10-08 17:15:00'),
-('2026-10-08 17:15:00', '2026-10-08 17:30:00'),
-('2026-10-08 17:30:00', '2026-10-08 17:45:00');
-
-
--- Ditto with schema. Just soem example items
+(1, '2026-10-08 17:00:00', '2026-10-08 17:15:00'),
+(2, '2026-10-08 17:15:00', '2026-10-08 17:30:00'),
+(3, '2026-10-08 17:30:00', '2026-10-08 17:45:00');

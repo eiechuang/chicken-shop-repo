@@ -52,4 +52,8 @@ public class UserService {
             "CUSTOMER"
         );
     }
+    public UserDTO getUserById(Long userId) {
+        return userRepo.findById(userId);
+    }
+
 }

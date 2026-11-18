@@ -1,0 +1,15 @@
+Chicken shop pickup hours are 10:00 AM to 8:00 PM. Customers should choose one of the pickup slots shown by the application.
+
+Customers may cancel an active pickup booking before pickup. Cancelled bookings cannot be cancelled again.
+
+A customer cannot book the same pickup slot more than once. The database enforces this duplicate-booking rule.
+
+Different customers may use the same pickup slot. Pickup slots represent collection windows rather than exclusive appointments.
+
+Customers can add optional pickup instructions when they make a booking.
+
+Staff providers manage pickup slots and can view all bookings. Customer accounts cannot perform staff operations.
+
+Notification delivery is best-effort. A booking or cancellation remains committed even if its confirmation notification is temporarily unavailable.
+
+For account or order questions that require personal booking data, the assistant should use the logged-in customer's booking tools rather than guessing.

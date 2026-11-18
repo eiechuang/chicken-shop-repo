@@ -1,11 +1,14 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.NotificationDTO;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
+import com.example.demo.dto.NotificationDTO;
 
 @Service
 public class HttpNotificationGateway implements NotificationGateway {
@@ -16,8 +19,23 @@ public class HttpNotificationGateway implements NotificationGateway {
     private final RestClient restClient;
 
     public HttpNotificationGateway() {
+
+        SimpleClientHttpRequestFactory requestFactory =
+            new SimpleClientHttpRequestFactory();
+
+        requestFactory.setConnectTimeout(
+            Duration.ofSeconds(2)
+        );
+
+        requestFactory.setReadTimeout(
+            Duration.ofSeconds(2)
+        );
+
         this.restClient =
-            RestClient.create("http://localhost:8080");
+            RestClient.builder()
+                .baseUrl("http://localhost:8080")
+                .requestFactory(requestFactory)
+                .build();
     }
 
     @Override
@@ -38,8 +56,9 @@ public class HttpNotificationGateway implements NotificationGateway {
                     .toBodilessEntity();
 
                 logger.info(
-                    "Notification sent successfully to {}",
-                    request.recipient()
+                    "Notification sent successfully: recipient={}, type={}",
+                    request.recipient(),
+                    request.type()
                 );
 
                 return;
@@ -47,15 +66,20 @@ public class HttpNotificationGateway implements NotificationGateway {
             } catch (Exception e) {
 
                 logger.warn(
-                    "Notification attempt {} failed for {}",
+                    "Notification attempt {} of {} failed for recipient={}: {}",
                     attempt,
-                    request.recipient()
+                    maxAttempts,
+                    request.recipient(),
+                    e.getMessage()
                 );
             }
         }
 
         logger.warn(
-            "Notification failed after all retries; booking remains committed"
+            "Notification failed after {} attempts for recipient={}. " +
+            "Booking or cancellation remains committed.",
+            maxAttempts,
+            request.recipient()
         );
     }
 }

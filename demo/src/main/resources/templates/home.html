@@ -42,6 +42,13 @@ xmlns:th="http://www.thymeleaf.org">
 
     <br><br>
 
+    <a th:if="${session.role == 'CUSTOMER'}"
+       href="/agent">
+        AI Pickup Assistant
+    </a>
+
+    <br><br>
+
     <!-- Provider only -->
     <div th:if="${session.role == 'PROVIDER'}">
         <a href="/staff/orders">View Staff Orders</a>

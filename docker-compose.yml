@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      AI_ENABLED: ${AI_ENABLED:-false}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+      SPRING_AI_MODEL_EMBEDDING_TEXT: ${SPRING_AI_MODEL_EMBEDDING_TEXT:-none}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+
+    volumes:
+      - chicken-data:/data
+
+volumes:
+  chicken-data:
